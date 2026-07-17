@@ -1,33 +1,115 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Canvas Sphere Example</title>
-  </head>
-  <body>
-    <h1>Hybrid Task Example</h1>
-    <ul>
-      <li>Thanks for trying the hybrid task control task.</li>
-      <li>Your goal is to:
-        <ul>
-          <li>Track the target</li>
-          <li>Match the target color at the same time</li>
-        </ul>
-      </li>
-      <li>On a desktop:
-        <ul>
-          <li>Use mouse cursor to track the moving target</li>
-          <li>Use LEFT mouse click to switch color</li>
-        </ul>
-      </li>
-      <li>On a phone:
-        <ul>
-          <li>Use your finger to track the target</li>
-          <li>Tap to change the color</li>
-        </ul>
-      </li>
-    </ul>
-    <canvas id="canvas" width="400" height="400"></canvas>
-    <script src = 'script.js'></script>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Tracking Game · Michael Li</title>
+  <style>
+    :root{
+      --bg:#faf6f1; --surface:#fffdfb; --ink:#2a2320; --mut:#82766d; --line:#ece3d9;
+      --plum:#7b3f5e; --peach:#c9711f;
+      --c0:#2f6fed; --c1:#f59e0b;               /* colorblind-safe blue / amber */
+      --good:#2f9e6f;
+      --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      --shadow:0 18px 40px -24px rgba(83,50,40,.5);
+    }
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#17130f; --surface:#1f1a15; --ink:#f1eae2; --mut:#a2958a; --line:#2d2620;
+        --plum:#e191b6; --peach:#e6a86b; --good:#57c79a; --shadow:0 18px 40px -24px rgba(0,0,0,.65); }
+    }
+    :root[data-theme="light"]{ --bg:#faf6f1; --surface:#fffdfb; --ink:#2a2320; --mut:#82766d; --line:#ece3d9; --plum:#7b3f5e; --good:#2f9e6f; }
+    :root[data-theme="dark"]{ --bg:#17130f; --surface:#1f1a15; --ink:#f1eae2; --mut:#a2958a; --line:#2d2620; --plum:#e191b6; --good:#57c79a; }
+
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+      -webkit-font-smoothing:antialiased; line-height:1.5;
+      min-height:100vh; display:flex; flex-direction:column; }
+    a{ color:var(--plum); text-decoration:none; }
+    a:hover{ text-decoration:underline; text-underline-offset:2px; }
+
+    .topbar{ border-bottom:1px solid var(--line); }
+    .topbar-in{ max-width:720px; margin:0 auto; padding:14px 22px; display:flex; align-items:center; gap:14px; }
+    .back{ color:var(--mut); font-size:14px; }
+    .back:hover{ color:var(--plum); text-decoration:none; }
+
+    main{ flex:1; max-width:720px; width:100%; margin:0 auto; padding:30px 22px 50px; }
+    h1{ font-size:clamp(26px,5vw,34px); letter-spacing:-.02em; margin:0 0 6px; font-weight:720; }
+    .lede{ color:var(--mut); margin:0 0 22px; font-size:16px; max-width:52ch; }
+
+    /* stats */
+    .stats{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; align-items:stretch; }
+    .stat{ background:var(--surface); border:1px solid var(--line); border-radius:14px;
+      padding:10px 16px; display:flex; flex-direction:column; gap:2px; min-width:96px; }
+    .stat .k{ font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--mut); font-weight:680; }
+    .stat .v{ font-size:24px; font-weight:720; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+    .stat.grow{ flex:1; min-width:150px; flex-direction:row; align-items:center; justify-content:space-between; gap:14px; }
+
+    .swatches{ display:flex; align-items:center; gap:14px; }
+    .swatch{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--mut); font-weight:600; }
+    .dot{ width:20px; height:20px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+    .matchpill{ font-size:13px; font-weight:720; padding:6px 14px; border-radius:999px; letter-spacing:.03em;
+      background:var(--line); color:var(--mut); transition:background .12s,color .12s; }
+    .matchpill.on{ background:var(--good); color:#fff; }
+
+    /* play field */
+    .field{ position:relative; border-radius:20px; overflow:hidden; border:1px solid var(--line);
+      box-shadow:var(--shadow); background:var(--surface); aspect-ratio:640/420; }
+    canvas{ display:block; width:100%; height:100%; touch-action:none; cursor:none; }
+    .overlay{ position:absolute; inset:0; display:grid; place-items:center; text-align:center;
+      background:rgba(255,253,251,.82); backdrop-filter:blur(3px); padding:24px; }
+    @media (prefers-color-scheme: dark){ .overlay{ background:rgba(31,26,21,.82); } }
+    :root[data-theme="dark"] .overlay{ background:rgba(31,26,21,.82); }
+    :root[data-theme="light"] .overlay{ background:rgba(255,253,251,.82); }
+    .overlay.hidden{ display:none; }
+    .overlay h2{ margin:0 0 10px; font-size:22px; font-weight:720; }
+    .overlay p{ margin:0 0 20px; color:var(--mut); max-width:40ch; }
+    .btn{ display:inline-block; background:var(--plum); color:#fff; font-weight:640; font-size:16px;
+      padding:12px 26px; border:0; border-radius:12px; cursor:pointer; font-family:inherit; }
+    @media (prefers-color-scheme: dark){ .btn{ color:#17130f; } }
+    :root[data-theme="dark"] .btn{ color:#17130f; }  :root[data-theme="light"] .btn{ color:#fff; }
+    .btn:hover{ filter:brightness(1.06); }
+    kbd{ font-family:ui-monospace,Menlo,monospace; font-size:.85em; background:var(--line); color:var(--ink);
+      padding:2px 7px; border-radius:5px; }
+    .hint{ margin-top:14px; color:var(--mut); font-size:14px; }
+    .hint b{ color:var(--ink); }
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="topbar-in">
+    <a class="back" href="../">← Michael Li</a>
+  </div></header>
+
+  <main>
+    <h1>Tracking Game</h1>
+    <p class="lede">Keep your ring on the moving target <em>and</em> match its color at the same time — a playable
+      slice of a brain–machine-interface tracking task. You score whenever both are true.</p>
+
+    <div class="stats">
+      <div class="stat"><span class="k">Score</span><span class="v" id="score">0</span></div>
+      <div class="stat"><span class="k">On target</span><span class="v" id="accuracy">0%</span></div>
+      <div class="stat grow">
+        <div class="swatches">
+          <span class="swatch">Target <span class="dot" id="sw-target"></span></span>
+          <span class="swatch">You <span class="dot" id="sw-you"></span></span>
+        </div>
+        <span class="matchpill" id="matchpill">TRACKING</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <canvas id="canvas"></canvas>
+      <div class="overlay" id="overlay">
+        <div>
+          <h2>Ready?</h2>
+          <p>Move onto the target and switch your color to match it. Points add up while you're locked on.</p>
+          <button class="btn" id="startbtn">Start</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="hint"><b>Move</b> mouse / finger to track · <b>Click</b>, <b>tap</b>, or press <kbd>Space</kbd> to switch your color.</p>
+  </main>
+
+  <script src="script.js"></script>
+</body>
 </html>
