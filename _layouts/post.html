@@ -1,0 +1,26 @@
+---
+layout: default
+---
+{% assign k = page.kind | default: "note" %}
+{% case k %}
+  {% when "writing" %}{% assign kemoji = "✍️" %}{% assign klabel = "Writing" %}
+  {% when "experiment" %}{% assign kemoji = "🎯" %}{% assign klabel = "Experiment" %}
+  {% else %}{% assign kemoji = "🧠" %}{% assign klabel = "Note" %}
+{% endcase %}
+<article class="post">
+  <div class="reading">
+    <a class="back" href="{{ '/' | relative_url }}">← all writing</a>
+    <div class="post-meta">
+      <span class="kind kind--{{ k }}">{{ kemoji }} {{ klabel }}</span>
+      <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%B %-d, %Y" }}</time>
+    </div>
+    <h1 class="post-title">{{ page.title }}</h1>
+    {% if page.summary %}<p class="post-lede">{{ page.summary }}</p>{% endif %}
+    <div class="prose">
+      {{ content }}
+    </div>
+    {% if page.link %}
+      <p class="post-cta"><a class="btn" href="{{ page.link | relative_url }}">{{ page.link_label | default: "Open it →" }}</a></p>
+    {% endif %}
+  </div>
+</article>

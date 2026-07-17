@@ -1,24 +1,47 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>My GitHub Pages Site</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-  </head>
-  <body>
-    <header>
-      <h1>Welcome to my GitHub Pages site!</h1>
-      <p>This is where I showcase my projects and share my thoughts.</p>
-    </header>
-    <div class="container">
-      <img src="my-photo.jpg" alt="My Photo">
-      <h2>About Me</h2>
-      <p>Hi there! My name is Si Jia Li and I'm a Neuroengineering Student. I'm passionate about coding. You can find more information about me on my <a href="https://www.linkedin.com/in/sijia66">LinkedIn profile</a>.</p>
-      <h2>My Projects</h2>
-      <ul>
-        <li><a href="/tracking_game/tracking_game.html">Tracking Game</a></li>
-        <li><a href="/blogs/budda_noble_truths.html">Budda Noble Truths</a></li>
-        <!-- Add more projects here -->
-      </ul>
+---
+layout: default
+---
+<section class="hero">
+  <img class="hero-avatar" src="{{ '/assets/img/husky.jpg' | relative_url }}" alt="My husky">
+  <div class="hero-text">
+    <p class="hello">Hi there 👋 I'm</p>
+    <h1>Michael Li</h1>
+    <p class="hero-lede">
+      A neural engineer at the University of Washington building
+      <strong>co-adaptive brain–machine interfaces</strong>. This is where I think out loud —
+      notes, experiments, and whatever I'm currently tinkering with. And yes, that's my husky.
+    </p>
+    <div class="pills">
+      <span class="pill">brain–machine interfaces</span>
+      <span class="pill">myoelectric control</span>
+      <span class="pill">ultrasound</span>
     </div>
-  </body>
-</html>
+  </div>
+</section>
+
+<section class="feed">
+  <h2 class="feed-head">Latest</h2>
+  <ul class="feed-list">
+    {% for post in site.posts %}
+      {% assign k = post.kind | default: "note" %}
+      {% case k %}
+        {% when "writing" %}{% assign kemoji = "✍️" %}{% assign klabel = "Writing" %}
+        {% when "experiment" %}{% assign kemoji = "🎯" %}{% assign klabel = "Experiment" %}
+        {% else %}{% assign kemoji = "🧠" %}{% assign klabel = "Note" %}
+      {% endcase %}
+      <li class="feed-item">
+        <a class="feed-link" href="{{ post.url | relative_url }}">
+          <span class="feed-icon feed-icon--{{ k }}" aria-hidden="true">{{ kemoji }}</span>
+          <span class="feed-body">
+            <span class="feed-top">
+              <span class="kind kind--{{ k }}">{{ klabel }}</span>
+              <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%b %Y" }}</time>
+            </span>
+            <span class="feed-title">{{ post.title }}</span>
+            <span class="feed-sum">{{ post.summary | default: post.excerpt | strip_html | truncate: 150 }}</span>
+          </span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</section>

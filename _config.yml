@@ -1,3 +1,30 @@
-theme: jekyll-theme-minimal
-title: Si Jia Li's homepage
-description: Bookmark this to keep an eye on my project updates!
+title: Michael Li
+tagline: "building brain–machine interfaces · writing about what I'm tinkering with"
+description: >-
+  Michael Li — neural engineer at the University of Washington.
+  Notes, experiments, and thinking out loud.
+author: Michael Li
+url: "https://michaelli66.github.io"
+baseurl: ""
+
+# Build
+markdown: kramdown
+permalink: /posts/:year/:month/:title/
+timezone: America/Los_Angeles
+excerpt_separator: "<!--more-->"
+
+# Links used around the site
+social:
+  github: https://github.com/michaelli66
+  scholar: https://scholar.google.com/citations?user=nVf-ZwoAAAAJ&hl=en
+  linkedin: https://www.linkedin.com/in/sijia66
+
+# Ignore leftover legacy files in the build
+exclude:
+  - blogs
+  - style.css
+  - README.md
+  - LICENSE
+  - Gemfile
+  - Gemfile.lock
+  - vendor

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }} · {{ site.tagline }}{% endif %}</title>
+  <meta name="description" content="{{ page.summary | default: site.description | strip_newlines }}">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐕</text></svg>">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-head">
+    <nav class="nav">
+      <a class="brand" href="{{ '/' | relative_url }}">
+        <img class="brand-img" src="{{ '/assets/img/husky.jpg' | relative_url }}" alt="" width="34" height="34">
+        <span>Michael Li</span>
+      </a>
+      <div class="nav-links">
+        <a href="{{ '/' | relative_url }}">Writing</a>
+        <a href="{{ '/research/' | relative_url }}">Research</a>
+        <a href="{{ site.social.github }}" rel="me">GitHub</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    {{ content }}
+  </main>
+
+  <footer class="site-foot">
+    <div class="foot-inner">
+      <span>© {{ site.time | date: "%Y" }} Michael Li</span>
+      <span class="foot-links">
+        <a href="{{ site.social.github }}">GitHub</a>
+        <a href="{{ site.social.scholar }}">Scholar</a>
+        <a href="{{ site.social.linkedin }}">LinkedIn</a>
+      </span>
+    </div>
+  </footer>
+</body>
+</html>
