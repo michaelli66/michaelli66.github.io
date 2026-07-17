@@ -11,6 +11,7 @@
       --c0:#2f6fed; --c1:#f59e0b;               /* colorblind-safe blue / amber */
       --good:#2f9e6f;
       --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
       --shadow:0 18px 40px -24px rgba(83,50,40,.5);
     }
     @media (prefers-color-scheme: dark){
@@ -22,77 +23,82 @@
 
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
-      -webkit-font-smoothing:antialiased; line-height:1.5;
-      min-height:100vh; display:flex; flex-direction:column; }
-    a{ color:var(--plum); text-decoration:none; }
-    a:hover{ text-decoration:underline; text-underline-offset:2px; }
+      -webkit-font-smoothing:antialiased; line-height:1.5; min-height:100vh; display:flex; flex-direction:column; }
+    a{ color:var(--plum); text-decoration:none; } a:hover{ text-decoration:underline; text-underline-offset:2px; }
 
     .topbar{ border-bottom:1px solid var(--line); }
-    .topbar-in{ max-width:720px; margin:0 auto; padding:14px 22px; display:flex; align-items:center; gap:14px; }
-    .back{ color:var(--mut); font-size:14px; }
-    .back:hover{ color:var(--plum); text-decoration:none; }
+    .topbar-in{ max-width:720px; margin:0 auto; padding:14px 22px; }
+    .back{ color:var(--mut); font-size:14px; } .back:hover{ color:var(--plum); text-decoration:none; }
 
     main{ flex:1; max-width:720px; width:100%; margin:0 auto; padding:30px 22px 50px; }
     h1{ font-size:clamp(26px,5vw,34px); letter-spacing:-.02em; margin:0 0 6px; font-weight:720; }
-    .lede{ color:var(--mut); margin:0 0 22px; font-size:16px; max-width:52ch; }
+    .lede{ color:var(--mut); margin:0 0 22px; font-size:16px; max-width:56ch; }
 
-    /* stats */
     .stats{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; align-items:stretch; }
     .stat{ background:var(--surface); border:1px solid var(--line); border-radius:14px;
-      padding:10px 16px; display:flex; flex-direction:column; gap:2px; min-width:96px; }
+      padding:10px 16px; display:flex; flex-direction:column; gap:2px; min-width:84px; }
     .stat .k{ font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--mut); font-weight:680; }
-    .stat .v{ font-size:24px; font-weight:720; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
-    .stat.grow{ flex:1; min-width:150px; flex-direction:row; align-items:center; justify-content:space-between; gap:14px; }
-
+    .stat .v{ font-size:23px; font-weight:720; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+    .stat.grow{ flex:1; min-width:170px; flex-direction:row; align-items:center; justify-content:space-between; gap:14px; }
     .swatches{ display:flex; align-items:center; gap:14px; }
     .swatch{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--mut); font-weight:600; }
     .dot{ width:20px; height:20px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
     .matchpill{ font-size:13px; font-weight:720; padding:6px 14px; border-radius:999px; letter-spacing:.03em;
-      background:var(--line); color:var(--mut); transition:background .12s,color .12s; }
+      background:var(--line); color:var(--mut); transition:background .12s,color .12s; white-space:nowrap; }
     .matchpill.on{ background:var(--good); color:#fff; }
 
-    /* play field */
     .field{ position:relative; border-radius:20px; overflow:hidden; border:1px solid var(--line);
       box-shadow:var(--shadow); background:var(--surface); aspect-ratio:640/420; }
     canvas{ display:block; width:100%; height:100%; touch-action:none; cursor:none; }
     .overlay{ position:absolute; inset:0; display:grid; place-items:center; text-align:center;
-      background:rgba(255,253,251,.82); backdrop-filter:blur(3px); padding:24px; }
-    @media (prefers-color-scheme: dark){ .overlay{ background:rgba(31,26,21,.82); } }
-    :root[data-theme="dark"] .overlay{ background:rgba(31,26,21,.82); }
-    :root[data-theme="light"] .overlay{ background:rgba(255,253,251,.82); }
+      background:rgba(255,253,251,.86); backdrop-filter:blur(3px); padding:24px; }
+    @media (prefers-color-scheme: dark){ .overlay{ background:rgba(31,26,21,.86); } }
+    :root[data-theme="dark"] .overlay{ background:rgba(31,26,21,.86); }
+    :root[data-theme="light"] .overlay{ background:rgba(255,253,251,.86); }
     .overlay.hidden{ display:none; }
     .overlay h2{ margin:0 0 10px; font-size:22px; font-weight:720; }
-    .overlay p{ margin:0 0 20px; color:var(--mut); max-width:40ch; }
+    .overlay p{ margin:0 0 18px; color:var(--mut); max-width:44ch; }
     .btn{ display:inline-block; background:var(--plum); color:#fff; font-weight:640; font-size:16px;
-      padding:12px 26px; border:0; border-radius:12px; cursor:pointer; font-family:inherit; }
+      padding:12px 24px; border:0; border-radius:12px; cursor:pointer; font-family:inherit; }
     @media (prefers-color-scheme: dark){ .btn{ color:#17130f; } }
-    :root[data-theme="dark"] .btn{ color:#17130f; }  :root[data-theme="light"] .btn{ color:#fff; }
+    :root[data-theme="dark"] .btn{ color:#17130f; } :root[data-theme="light"] .btn{ color:#fff; }
     .btn:hover{ filter:brightness(1.06); }
-    kbd{ font-family:ui-monospace,Menlo,monospace; font-size:.85em; background:var(--line); color:var(--ink);
-      padding:2px 7px; border-radius:5px; }
-    .hint{ margin-top:14px; color:var(--mut); font-size:14px; }
-    .hint b{ color:var(--ink); }
+    .btn.ghost{ background:transparent; color:var(--plum); box-shadow:inset 0 0 0 1.5px var(--line); }
+    :root[data-theme="light"] .btn.ghost, :root[data-theme="dark"] .btn.ghost{ color:var(--plum); background:transparent; }
+    .btnrow{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+    /* results readout */
+    .results{ width:min(440px,100%); }
+    .metrics{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:4px 0 20px; text-align:left; }
+    .metric{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 14px; }
+    .metric .mk{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--mut); font-weight:680; }
+    .metric .mv{ font-size:20px; font-weight:720; font-variant-numeric:tabular-nums; }
+    .metric .mv small{ font-size:12px; color:var(--mut); font-weight:600; }
+
+    kbd{ font-family:var(--mono); font-size:.85em; background:var(--line); color:var(--ink); padding:2px 7px; border-radius:5px; }
+    .hint{ margin-top:14px; color:var(--mut); font-size:14px; } .hint b{ color:var(--ink); }
+    .hint a{ color:var(--mut); text-decoration:underline; }
   </style>
 </head>
 <body>
-  <header class="topbar"><div class="topbar-in">
-    <a class="back" href="../">← Michael Li</a>
-  </div></header>
+  <header class="topbar"><div class="topbar-in"><a class="back" href="../">← Michael Li</a></div></header>
 
   <main>
     <h1>Tracking Game</h1>
-    <p class="lede">Keep your ring on the moving target <em>and</em> match its color at the same time — a playable
-      slice of a brain–machine-interface tracking task. You score whenever both are true.</p>
+    <p class="lede">A 45-second trial: keep your ring on the drifting target <em>and</em> match its color.
+      The target follows a <b>sum-of-sines</b> path (unpredictable, but analyzable), and every frame is logged —
+      at the end you can <b>download the session as JSON</b>.</p>
 
     <div class="stats">
       <div class="stat"><span class="k">Score</span><span class="v" id="score">0</span></div>
       <div class="stat"><span class="k">On target</span><span class="v" id="accuracy">0%</span></div>
+      <div class="stat"><span class="k">Time</span><span class="v" id="time">45.0</span></div>
       <div class="stat grow">
         <div class="swatches">
           <span class="swatch">Target <span class="dot" id="sw-target"></span></span>
           <span class="swatch">You <span class="dot" id="sw-you"></span></span>
         </div>
-        <span class="matchpill" id="matchpill">TRACKING</span>
+        <span class="matchpill" id="matchpill">READY</span>
       </div>
     </div>
 
@@ -101,13 +107,24 @@
       <div class="overlay" id="overlay">
         <div>
           <h2>Ready?</h2>
-          <p>Move onto the target and switch your color to match it. Points add up while you're locked on.</p>
-          <button class="btn" id="startbtn">Start</button>
+          <p>Move onto the target and switch your color to match it. Points add up while you're locked on — for 45 seconds.</p>
+          <button class="btn" id="startbtn">Start trial</button>
+        </div>
+      </div>
+      <div class="overlay hidden" id="resultsOverlay">
+        <div class="results">
+          <h2>Trial complete</h2>
+          <div class="metrics" id="metrics"></div>
+          <div class="btnrow">
+            <button class="btn" id="downloadbtn">Download JSON</button>
+            <button class="btn ghost" id="againbtn">Play again</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <p class="hint"><b>Move</b> mouse / finger to track · <b>Click</b>, <b>tap</b>, or press <kbd>Space</kbd> to switch your color.</p>
+    <p class="hint"><b>Move</b> mouse / finger to track · <b>Click</b>, <b>tap</b>, or <kbd>Space</kbd> to switch color.
+      · <a href="./README.md">What's this measuring?</a></p>
   </main>
 
   <script src="script.js"></script>

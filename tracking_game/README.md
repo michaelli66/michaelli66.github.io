@@ -1,68 +1,104 @@
 # Tracking Game
 
-A small browser experiment that mirrors a **hybrid control task** from
-brain–machine-interface research: you have to do two things at once.
+A small browser experiment that doubles as a **research instrument** for a
+hybrid control task from brain–machine-interface / sensorimotor research: you do
+two things at once.
 
-- **Track** — keep your cursor (or finger) on the moving target.
-- **Match** — make your color match the target's color at the same time.
+- **Track** — keep your ring on a drifting target.
+- **Match** — keep your color matching the target's color.
 
 Live at **https://michaelli66.github.io/tracking_game/tracking_game.html**.
 
-## How to play
+## The trial
+
+Each run is a **45-second trial**. The target follows a **sum-of-sines**
+trajectory — `x(t)` and `y(t)` are each a sum of a few sinusoids at fixed
+frequencies with random phases. It looks unpredictable to the player, but because
+the input frequencies are known, the logged data supports a **frequency-response
+analysis** of the human tracker (tracking bandwidth, gain, phase lag).
+
+You score points only while you're **on the target AND color-matched**; holding
+that builds a combo multiplier (up to ×4). At the end you get a readout —
+**score, % matched, mean tracking error, mean color-switch reaction time** — and
+can **download the whole session as JSON**.
 
 | | Track | Switch color |
 |--|-------|--------------|
-| **Desktop** | move the mouse | left-click |
+| **Desktop** | move the mouse | click or `Space` |
 | **Phone**   | drag your finger | tap |
 
-The target slides left–right across the canvas and changes color every few
-seconds. Your job is to stay on it *and* keep your color matching — the same
-split-attention trade-off (continuous tracking vs. discrete decisions) that
-co-adaptive interfaces have to reason about.
+## Data logged per session
 
-## Scoring
+The downloaded `tracking_<timestamp>.json` contains:
 
-You earn points **only while you're both on the target and matching its color**.
-Staying locked on builds a **combo multiplier** (up to ×4), so sustained tracking
-is worth far more than brief taps. The HUD shows your score, your **on-target %**
-(how much of the session you were locked on), the two color swatches, and a status
-pill (`TRACKING` / `SWITCH COLOR!` / `MATCHED ×n`). The target also **speeds up and
-recolors faster** the longer you play.
+```jsonc
+{
+  "meta": {
+    "task": "hybrid-tracking", "date": "…", "durationSec": 45,
+    "field": { "w": 640, "h": 420 }, "targetRadius": 34, "playerRadius": 26,
+    "colors": ["#2f6fed", "#f59e0b"],
+    "trajectory": {                       // reproducible: the exact stimulus
+      "type": "sum-of-sines",
+      "x": { "freqsHz": [...], "amps": [...], "phases": [...] },
+      "y": { "freqsHz": [...], "amps": [...], "phases": [...] }
+    },
+    "userAgent": "…", "inputType": "mouse" | "touch"
+  },
+  "frames": [ { "t", "tx","ty",   // target x/y
+                     "cx","cy",   // cursor x/y
+                     "tc","pc",   // target / player color index
+                     "m" } ],     // matched flag (0/1)  — ~60 Hz
+  "events": [ { "t", "type": "targetSwitch"|"playerSwitch", "to" } ],
+  "summary": { "score", "meanTrackingErrorPx", "pctMatched",
+               "colorSwitches", "meanSwitchRTsec", "frames" }
+}
+```
+
+That per-frame time series is the point: from it you can derive tracking error,
+lag (cursor-vs-target cross-correlation), a frequency response (since the input
+spectrum is known), and color-switch reaction times.
 
 ## How it works
 
 Plain HTML5 canvas, no libraries, in `script.js`:
 
-- **State** — two objects, `target` (position, velocity, radius, color) and
-  `player` (position, radius, color), plus score/combo/timing counters.
-- **`update(dt)`** — moves and bounces the target, ramps difficulty, rotates the
-  target color on a shrinking timer, and computes on-target / color-match / scoring.
-- **`render(state)`** — draws the target (with a glow when matched) and the
-  player's ring, and updates the HUD in the DOM.
-- **loop** — a `requestAnimationFrame` loop with delta-time, so motion is smooth
-  and framerate-independent. Input is unified across mouse, touch, and `Space`.
+- **State** — `target` and `player` objects, plus score/combo/timing counters and
+  a `log` object accumulating frames + events.
+- **`update(dt)`** — advances the sum-of-sines target, rotates the target color on
+  a randomized 2–4.5 s timer, computes on-target / match / scoring, and appends a
+  frame to the log. Ends the trial at 45 s.
+- **`render(state)`** — draws the target (glow when matched) and the player ring,
+  and updates the HUD.
+- **loop** — a delta-time `requestAnimationFrame` loop, so motion is smooth and
+  framerate-independent. Input is unified across mouse, touch, and `Space`.
 
 ```
 tracking_game/
-  tracking_game.html   themed page: HUD, play field, start overlay, styles
-  script.js            game logic (state → update → render loop)
-  assets/husky.jpg     husky sprite (unused by the current build)
+  tracking_game.html   themed page: HUD, play field, start + results overlays
+  script.js            game logic + data logging
+  assets/              image assets
   README.md            this file
 ```
 
-Tunables at the top of `script.js`: `COLORS` (palette, currently colorblind-safe
-blue/amber), the target's speed in the `target` object, and the difficulty/combo
-constants inside `update()`.
+Tunables at the top of `script.js`: `COLORS`, `TRIAL_SEC`, and the frequency sets
+`FREQS_X` / `FREQS_Y` that define the trajectory.
 
-## Ideas to make it more interesting
+## Research questions this can probe
 
-- **Timed rounds + high score** saved to `localStorage`.
-- **More than two colors**, added as you level up.
-- **Shrinking target** or a second decoy target to split attention further.
-- **"Juice"**: particle burst on lock-on, a combo sound, screen-shake on a miss.
-- **Adaptive difficulty** that tunes speed to keep you near a target accuracy —
-  which is literally the co-adaptive-interface idea the task comes from.
+- **Tracking bandwidth & sensorimotor delay** from the sum-of-sines frequency response.
+- **Dual-task cost**: how much the color-matching subtask degrades tracking.
+- **Predictable vs. random** trajectories: feedforward internal models vs. pure feedback.
+- **Learning curves** within and across sessions.
+- **Individual differences / motor screening** (tremor, bradykinesia signatures).
+
+## Ideas not yet built
+
+- Timed **high-score** board (needs a small backend for a *shared* board).
+- Adaptive difficulty that tunes target speed to hold you near a target accuracy —
+  a browser-sized version of the co-adaptive-interface idea.
+- A second **decoy** target, or a shrinking target, to push the attention split.
+- Juice: lock-on particle burst, a combo sound.
 
 ## Credit
 
-Original author: Si Jia (Michael) Li, 2023. Rebuilt 2026.
+Original author: Si Jia (Michael) Li, 2023. Rebuilt as an instrumented trial, 2026.
